@@ -61,25 +61,51 @@ interface DeviceCompatibility {
   issues: string[]
 }
 
-interface AnalysisResult {
-  score: number
-  sections: ProfileSection[]
+interface Analysis {
+  overview: string;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  niche: string;
+  competitors: Competitor[];
+  metrics: {
+    visibility: number;
+    completeness: number;
+    optimization: number;
+    engagement: number;
+    conversion: number;
+  };
+  deviceCompatibility: {
+    mobile: boolean;
+    tablet: boolean;
+    desktop: boolean;
+    issues: string[];
+  };
+  sections: ProfileSection[];
   nicheSpecific: {
-    niche: string
-    recommendations: string[]
-    keywords: string[]
-    marketDemand: number
-    competition: number
-  }
+    marketDemand: number;
+    competition: number;
+    keywords: string[];
+  };
   stats: {
-    profileViews: number
-    clientInvites: number
-    searchRanking: number
-  }
-  competitors: CompetitorProfile[]
-  keywordAnalysis: KeywordAnalysis[]
-  metrics: ProfileMetrics
-  deviceCompatibility: DeviceCompatibility
+    profileViews: number;
+    clientInvites: number;
+    searchRanking: number;
+  };
+  score: number;
+}
+
+interface Competitor {
+  name: string;
+  hourlyRate: number;
+  successRate: number;
+  skills: string[];
+}
+
+interface AnalysisResponse {
+  success: boolean;
+  data?: Analysis;
+  error?: string;
 }
 
 const mockProfileData = {
@@ -143,180 +169,101 @@ Key Achievements:
 
 export default function ProfileAnalyzer() {
   const [profileUrl, setProfileUrl] = useState('')
+  const [analysis, setAnalysis] = useState<Analysis | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [activeFeature, setActiveFeature] = useState('analyzer')
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [scrollPosition, setScrollPosition] = useState(0)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [result, setResult] = useState<AnalysisResult | null>(null)
-  const [activeSection, setActiveSection] = useState<string | null>(null)
   const [showProposalGenerator, setShowProposalGenerator] = useState(false)
   const [showProfileViewer, setShowProfileViewer] = useState(false)
-  const [activeFeature, setActiveFeature] = useState<'analyzer' | 'seo' | 'proposal' | 'preview'>('analyzer')
-  const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
-  const [isMobile, setIsMobile] = useState(false)
-  const [isNavOpen, setIsNavOpen] = useState(false)
-  const [activeNavItem, setActiveNavItem] = useState('analyzer')
-  const [scrollPosition, setScrollPosition] = useState(0)
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  const [activeSection, setActiveSection] = useState<string | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrollPosition(window.scrollY)
+      const position = window.scrollY
+      setScrollPosition(position)
+      setIsScrolled(position > 50)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const handleAnalyze = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsAnalyzing(true)
-    
-    // Simulate analysis (replace with actual API call)
-    setTimeout(() => {
-      setResult({
-        score: 85,
-        sections: [
-          {
-            title: 'Profile Title',
-            content: 'Full Stack Developer | React & Node.js Expert',
-            score: 75,
-            improvements: [
-              'Add specific years of experience',
-              'Include your top achievement',
-              'Add your main service offering'
-            ],
-            tips: [
-              'Keep it under 50 characters',
-              'Use industry-specific keywords',
-              'Include your main expertise'
-            ],
-            visualGuide: {
-              image: '/images/profile-sections/title-section.png',
-              highlights: [
-                { x: 10, y: 20, text: 'Add years of experience', type: 'improvement' },
-                { x: 30, y: 40, text: 'Include main service', type: 'good' }
-              ]
+  const analyzeProfile = async () => {
+    try {
+      setIsAnalyzing(true)
+      setError(null)
+      // Simulate API call
+      const response: AnalysisResponse = await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            success: true,
+            data: {
+              overview: "Experienced Full Stack Developer with expertise in modern web technologies...",
+              strengths: [
+                "Strong technical skills in React and Node.js",
+                "Excellent communication and project management",
+                "Proven track record of successful projects"
+              ],
+              weaknesses: [
+                "Limited experience with cloud platforms",
+                "Could improve documentation practices"
+              ],
+              recommendations: [
+                "Add more cloud platform certifications",
+                "Include more detailed project descriptions"
+              ],
+              niche: "Full Stack Development",
+              competitors: [
+                {
+                  name: "John Doe",
+                  hourlyRate: 45,
+                  successRate: 98,
+                  skills: ["React", "Node.js", "AWS"]
+                }
+              ],
+              metrics: {
+                visibility: 95,
+                completeness: 85,
+                optimization: 90,
+                engagement: 80,
+                conversion: 75
+              },
+              deviceCompatibility: {
+                mobile: true,
+                tablet: true,
+                desktop: true,
+                issues: []
+              },
+              sections: [],
+              nicheSpecific: {
+                marketDemand: 85,
+                competition: 65,
+                keywords: ["React", "Node.js", "TypeScript"]
+              },
+              stats: {
+                profileViews: 150,
+                clientInvites: 12,
+                searchRanking: 8
+              },
+              score: 85
             }
-          },
-          {
-            title: 'Overview Section',
-            content: 'Experienced developer with expertise in web development...',
-            score: 80,
-            improvements: [
-              'Add specific achievements with numbers',
-              'Include client testimonials',
-              'Mention your unique value proposition'
-            ],
-            tips: [
-              'Start with a strong hook',
-              'Use bullet points for readability',
-              'Include call-to-action'
-            ]
-          },
-          {
-            title: 'Portfolio Items',
-            content: '5 portfolio items showcasing web development projects',
-            score: 60,
-            improvements: [
-              'Add more portfolio items',
-              'Include project descriptions',
-              'Add client testimonials'
-            ],
-            tips: [
-              'Showcase your best work first',
-              'Include metrics and results',
-              'Add before/after examples'
-            ]
-          }
-        ],
-        nicheSpecific: {
-          niche: 'Web Development',
-          recommendations: [
-            'Add links to live projects',
-            'Include GitHub contributions',
-            'Mention specific frameworks',
-            'Show performance metrics'
-          ],
-          keywords: [
-            'React',
-            'Node.js',
-            'TypeScript',
-            'REST APIs',
-            'Performance Optimization'
-          ],
-          marketDemand: 85,
-          competition: 65
-        },
-        stats: {
-          profileViews: 150,
-          clientInvites: 12,
-          searchRanking: 8
-        },
-        competitors: [
-          {
-            name: "John Doe",
-            title: "Senior Full Stack Developer",
-            hourlyRate: 85,
-            jobSuccess: 98,
-            totalEarnings: 150000,
-            skills: ["React", "Node.js", "AWS", "TypeScript"],
-            profileUrl: "https://upwork.com/freelancers/johndoe"
-          },
-          {
-            name: "Jane Smith",
-            title: "Full Stack JavaScript Expert",
-            hourlyRate: 75,
-            jobSuccess: 95,
-            totalEarnings: 120000,
-            skills: ["React", "Vue.js", "Node.js", "MongoDB"],
-            profileUrl: "https://upwork.com/freelancers/janesmith"
-          }
-        ],
-        keywordAnalysis: [
-          {
-            keyword: 'React',
-            relevance: 90,
-            competition: 50,
-            usage: 80,
-            suggestions: ['React.js', 'React Native', 'React Router']
-          },
-          {
-            keyword: 'Node.js',
-            relevance: 85,
-            competition: 40,
-            usage: 75,
-            suggestions: ['Express', 'Koa', 'Hapi']
-          },
-          {
-            keyword: 'TypeScript',
-            relevance: 80,
-            competition: 30,
-            usage: 70,
-            suggestions: ['TypeScript', 'JavaScript', 'Flow']
-          }
-        ],
-        metrics: {
-          visibility: 95,
-          completeness: 85,
-          optimization: 90,
-          engagement: 80,
-          conversion: 75
-        },
-        deviceCompatibility: {
-          mobile: true,
-          tablet: true,
-          desktop: true,
-          issues: []
-        }
+          })
+        }, 1500)
       })
+
+      if (response.success && response.data) {
+        setAnalysis(response.data)
+      } else {
+        setError(response.error || 'Failed to analyze profile')
+      }
+    } catch (err) {
+      setError('An error occurred while analyzing the profile')
+    } finally {
       setIsAnalyzing(false)
-    }, 2000)
+    }
   }
 
   const navItems = [
@@ -412,13 +359,12 @@ export default function ProfileAnalyzer() {
                 <motion.button
                   key={item.id}
                   onClick={() => {
-                    setActiveNavItem(item.id)
                     setActiveFeature(item.id as any)
                     if (item.id === 'proposal') setShowProposalGenerator(true)
                     if (item.id === 'preview') setShowProfileViewer(true)
                   }}
                   className={`relative px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
-                    activeNavItem === item.id
+                    activeFeature === item.id
                       ? 'text-blue-600'
                       : 'text-gray-600 hover:text-blue-600'
                   }`}
@@ -427,7 +373,7 @@ export default function ProfileAnalyzer() {
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                  {activeNavItem === item.id && (
+                  {activeFeature === item.id && (
                     <motion.div
                       className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
                       layoutId="activeIndicator"
@@ -440,7 +386,7 @@ export default function ProfileAnalyzer() {
             {/* Mobile Menu Button */}
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsNavOpen(!isNavOpen)}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 rounded-lg hover:bg-gray-100"
             >
               <svg
@@ -453,7 +399,7 @@ export default function ProfileAnalyzer() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d={isNavOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                  d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
                 />
               </svg>
             </motion.button>
@@ -461,7 +407,7 @@ export default function ProfileAnalyzer() {
 
           {/* Mobile Navigation Menu */}
           <AnimatePresence>
-            {isNavOpen && (
+            {isMenuOpen && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -473,14 +419,13 @@ export default function ProfileAnalyzer() {
                   <motion.button
                     key={item.id}
                     onClick={() => {
-                      setActiveNavItem(item.id)
                       setActiveFeature(item.id as any)
-                      setIsNavOpen(false)
+                      setIsMenuOpen(false)
                       if (item.id === 'proposal') setShowProposalGenerator(true)
                       if (item.id === 'preview') setShowProfileViewer(true)
                     }}
                     className={`w-full px-4 py-3 rounded-lg flex items-center gap-3 ${
-                      activeNavItem === item.id
+                      activeFeature === item.id
                         ? 'bg-blue-50 text-blue-600'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
@@ -550,7 +495,7 @@ export default function ProfileAnalyzer() {
                     />
                   </div>
                   <button
-                    onClick={handleAnalyze}
+                    onClick={analyzeProfile}
                     disabled={isAnalyzing}
                     className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
@@ -585,10 +530,10 @@ export default function ProfileAnalyzer() {
             )}
 
             {/* New Quick Analysis Panel */}
-            {result && (
+            {analysis && (
               <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {Object.entries(result.metrics).map(([metric, value]) => (
+                  {Object.entries(analysis.metrics).map(([metric, value]) => (
                     <div key={metric} className="text-center p-4 rounded-lg bg-gray-50">
                       <div className="text-3xl font-bold text-blue-600">{value}%</div>
                       <div className="text-gray-600 capitalize">{metric}</div>
@@ -599,36 +544,22 @@ export default function ProfileAnalyzer() {
             )}
 
             {/* New Keyword Analysis Section */}
-            {result && activeTab === 'keywords' && (
+            {analysis && activeTab === 'keywords' && (
               <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Keyword Analysis</h2>
                 <div className="grid gap-6">
-                  {result.keywordAnalysis.map((keyword, index) => (
+                  {analysis.nicheSpecific.keywords.map((keyword: string, index: number) => (
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold">{keyword.keyword}</h3>
-                        <div className="flex gap-4">
-                          <div>
-                            <span className="text-sm text-gray-600">Relevance</span>
-                            <div className="font-bold text-green-600">{keyword.relevance}%</div>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Competition</span>
-                            <div className="font-bold text-red-600">{keyword.competition}%</div>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Usage</span>
-                            <div className="font-bold text-blue-600">{keyword.usage}%</div>
-                          </div>
-                        </div>
+                        <span className="font-semibold text-gray-900">{keyword}</span>
                       </div>
                       <div className="space-y-2">
-                        {keyword.suggestions.map((suggestion, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-gray-700">
-                            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {analysis.recommendations.map((suggestion: string, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2 text-gray-600">
+                            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            {suggestion}
+                            <span>{suggestion}</span>
                           </div>
                         ))}
                       </div>
@@ -639,24 +570,24 @@ export default function ProfileAnalyzer() {
             )}
 
             {/* Device Compatibility Check */}
-            {result && (
+            {analysis && (
               <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Device Compatibility</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {(['mobile', 'tablet', 'desktop'] as DeviceType[]).map((device) => (
                     <div key={device} className="text-center">
-                      <div className={`text-4xl mb-2 ${result.deviceCompatibility[device] ? 'text-green-500' : 'text-red-500'}`}>
-                        {result.deviceCompatibility[device] ? '✓' : '✗'}
+                      <div className={`text-4xl mb-2 ${analysis.deviceCompatibility[device] ? 'text-green-500' : 'text-red-500'}`}>
+                        {analysis.deviceCompatibility[device] ? '✓' : '✗'}
                       </div>
                       <div className="text-gray-900 capitalize">{device}</div>
                     </div>
                   ))}
                 </div>
-                {result.deviceCompatibility.issues.length > 0 && (
+                {analysis.deviceCompatibility.issues.length > 0 && (
                   <div className="mt-6">
                     <h3 className="font-semibold text-gray-900 mb-3">Issues to Address:</h3>
                     <ul className="space-y-2">
-                      {result.deviceCompatibility.issues.map((issue, index) => (
+                      {analysis.deviceCompatibility.issues.map((issue, index) => (
                         <li key={index} className="flex items-center gap-2 text-red-600">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -671,25 +602,25 @@ export default function ProfileAnalyzer() {
             )}
 
             {/* Analysis Results */}
-            {result && (
+            {analysis && (
               <div className="space-y-8 animate-fade-in">
                 {/* Overall Score & Stats */}
                 <div className="bg-white rounded-xl shadow-lg p-6">
                   <div className="grid md:grid-cols-4 gap-6">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-blue-600">{result.score}</div>
+                      <div className="text-4xl font-bold text-blue-600">{analysis.score}</div>
                       <div className="text-gray-600">Overall Score</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-green-600">{result.stats.profileViews}</div>
+                      <div className="text-4xl font-bold text-green-600">{analysis.stats.profileViews}</div>
                       <div className="text-gray-600">Profile Views</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-purple-600">{result.stats.clientInvites}</div>
+                      <div className="text-4xl font-bold text-purple-600">{analysis.stats.clientInvites}</div>
                       <div className="text-gray-600">Client Invites</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-orange-600">{result.stats.searchRanking}</div>
+                      <div className="text-4xl font-bold text-orange-600">{analysis.stats.searchRanking}</div>
                       <div className="text-gray-600">Search Ranking</div>
                     </div>
                   </div>
@@ -697,7 +628,7 @@ export default function ProfileAnalyzer() {
 
                 {/* Profile Sections */}
                 <div className="space-y-6">
-                  {result.sections.map((section, index) => (
+                  {analysis.sections.map((section, index) => (
                     <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
                       <div 
                         className="p-6 cursor-pointer hover:bg-gray-50"
@@ -791,24 +722,24 @@ export default function ProfileAnalyzer() {
                         <div>
                           <div className="flex justify-between mb-1">
                             <span className="text-gray-700">Market Demand</span>
-                            <span className="text-gray-900">{result.nicheSpecific.marketDemand}%</span>
+                            <span className="text-gray-900">{analysis.nicheSpecific.marketDemand}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-green-500 h-2 rounded-full"
-                              style={{ width: `${result.nicheSpecific.marketDemand}%` }}
+                              style={{ width: `${analysis.nicheSpecific.marketDemand}%` }}
                             ></div>
                           </div>
                         </div>
                         <div>
                           <div className="flex justify-between mb-1">
                             <span className="text-gray-700">Competition Level</span>
-                            <span className="text-gray-900">{result.nicheSpecific.competition}%</span>
+                            <span className="text-gray-900">{analysis.nicheSpecific.competition}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-red-500 h-2 rounded-full"
-                              style={{ width: `${result.nicheSpecific.competition}%` }}
+                              style={{ width: `${analysis.nicheSpecific.competition}%` }}
                             ></div>
                           </div>
                         </div>
@@ -818,7 +749,7 @@ export default function ProfileAnalyzer() {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">Recommended Keywords</h3>
                       <div className="flex flex-wrap gap-2">
-                        {result.nicheSpecific.keywords.map((keyword, index) => (
+                        {analysis.nicheSpecific.keywords.map((keyword, index) => (
                           <span
                             key={index}
                             className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
@@ -835,7 +766,7 @@ export default function ProfileAnalyzer() {
                 <div className="bg-white rounded-xl shadow-lg p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Top Competitors in Your Niche</h2>
                   <div className="grid md:grid-cols-2 gap-6">
-                    {result.competitors.map((competitor, index) => (
+                    {analysis.competitors.map((competitor, index) => (
                       <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-4">
                           <div>
@@ -845,7 +776,7 @@ export default function ProfileAnalyzer() {
                           <div className="text-right">
                             <div className="font-bold text-green-600">${competitor.hourlyRate}/hr</div>
                             <div className="text-sm text-gray-500">
-                              {competitor.jobSuccess}% Job Success
+                              {competitor.successRate}% Success Rate
                             </div>
                           </div>
                         </div>
