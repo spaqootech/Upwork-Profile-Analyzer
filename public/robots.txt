@@ -1,0 +1,12 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://upwork-profile-analyzer.vercel.app/sitemap.xml
+
+# Disallow API routes
+Disallow: /api/
+
+# Optimize crawling
+Crawl-delay: 10 
